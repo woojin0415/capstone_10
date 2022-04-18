@@ -1,4 +1,4 @@
-package com.delee.ble_manless_delivery_box
+package com.dinkar.blescanner
 
 import android.Manifest
 import android.app.AlertDialog
@@ -25,11 +25,8 @@ import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.delee.ble_manless_eelivery_box.Beacon
-import com.delee.ble_manless_eelivery_box.R
 import java.io.BufferedWriter
 import java.io.FileWriter
-import java.sql.DriverManager.println
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -50,6 +47,19 @@ class ScannerFragment : Fragment() {
     var beaconAdapter: BeaconsAdapter? = null
 
     //추가
+    var rssilist1 = ArrayList<Int>()
+    var rssilist2 = ArrayList<Int>()
+    var rssilist3 = ArrayList<Int>()
+
+    var timelist1=ArrayList<String>()
+    var timelist2=ArrayList<String>()
+    var timelist3=ArrayList<String>()
+
+    val mac1="C2:02:DD:00:13:E7"
+    val mac2="C1:00:47:00:33:28"
+    val mac3="C2:02:DD:00:13:E9"
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -119,11 +129,17 @@ class ScannerFragment : Fragment() {
         btScanner!!.startScan(leScanCallback)
     }
 
+
     private fun onStopScannerButtonClick() {
         stopButton.visibility = View.GONE
         startButton.visibility = View.VISIBLE
         btScanner!!.stopScan(leScanCallback)
 
+    }
+    //추가
+
+    private fun onStoreButtonClick() {
+        storeRssi()
     }
 
     private fun setUpBluetoothManager() {
@@ -178,79 +194,79 @@ class ScannerFragment : Fragment() {
 
     private val leScanCallback: ScanCallback by lazy {
         object : ScanCallback() {
-            override fun onScanResult(callbackType: Int, result: ScanResult) {
-                val scanRecord = result.scanRecord
-                val beacon = Beacon(result.device.address)
-                beacon.rssi = result.rssi
-                beacon.manufacturer = result.device.name
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            val scanRecord = result.scanRecord
+            val beacon = Beacon(result.device.address)
+            beacon.rssi = result.rssi
+            beacon.manufacturer = result.device.name
 
-                storeList(beacon.macAddress.toString(), beacon.rssi!!)
+            storeList(beacon.macAddress.toString(), beacon.rssi!!)
 
-                if(beacon.macAddress == "00:3D:E8:3C:D9:7A"){
-                    Log.i("Lee","Scan: "+"00:3D:E8:3C:D9:7A")
-                }
-
-
-                if (scanRecord != null) {
-                    val serviceUuids = scanRecord.serviceUuids
-                    val iBeaconManufactureData = scanRecord.getManufacturerSpecificData(0X004c)
-                    if (serviceUuids != null && serviceUuids.size > 0 && serviceUuids.contains(
-                            eddystoneServiceId
-                        )
-                    ) {
-                        val serviceData = scanRecord.getServiceData(eddystoneServiceId)
-                        if (serviceData != null && serviceData.size > 18) {
-                            val eddystoneUUID =
-                                Utils.toHexString(Arrays.copyOfRange(serviceData, 2, 18))
-                            val namespace = String(eddystoneUUID.toCharArray().sliceArray(0..19))
-                            val instance = String(
-                                eddystoneUUID.toCharArray()
-                                    .sliceArray(20 until eddystoneUUID.toCharArray().size)
-                            )
-                            beacon.type = Beacon.beaconType.eddystoneUID
-                            beacon.namespace = namespace
-                            beacon.instance = instance
-
-                            Log.e("Lee", "Namespace:$namespace Instance:$instance")
-                        }
-                    }
-                    if (iBeaconManufactureData != null && iBeaconManufactureData.size >= 23) {
-                        val iBeaconUUID = Utils.toHexString(iBeaconManufactureData.copyOfRange(2, 18))
-                        val major = Integer.parseInt(
-                            Utils.toHexString(
-                                iBeaconManufactureData.copyOfRange(
-                                    18,
-                                    20
-                                )
-                            ), 16
-                        )
-                        val minor = Integer.parseInt(
-                            Utils.toHexString(
-                                iBeaconManufactureData.copyOfRange(
-                                    20,
-                                    22
-                                )
-                            ), 16
-                        )
-                        beacon.type = Beacon.beaconType.iBeacon
-                        beacon.uuid = iBeaconUUID
-                        beacon.major = major
-                        beacon.minor = minor
-                        Log.e("Lee", "iBeaconUUID:$iBeaconUUID major:$major minor:$minor")
-                    }
-                }
-                if(beacon == null){
-                    Log.e("Lee","beacon is null")
-                }else{
-                    beaconSet.add(beacon)
-                    (recyclerView.adapter as BeaconsAdapter).updateData(beaconSet.toList(),beaconTypePositionSelected)
-                }
+            if(beacon.macAddress == "00:3D:E8:3C:D9:7A"){
+                Log.i("Lee","Scan: "+"00:3D:E8:3C:D9:7A")
             }
 
-            override fun onScanFailed(errorCode: Int) {
-                Log.e("Lee", errorCode.toString())
+
+            if (scanRecord != null) {
+                val serviceUuids = scanRecord.serviceUuids
+                val iBeaconManufactureData = scanRecord.getManufacturerSpecificData(0X004c)
+                if (serviceUuids != null && serviceUuids.size > 0 && serviceUuids.contains(
+                        eddystoneServiceId
+                    )
+                ) {
+                    val serviceData = scanRecord.getServiceData(eddystoneServiceId)
+                    if (serviceData != null && serviceData.size > 18) {
+                        val eddystoneUUID =
+                            Utils.toHexString(Arrays.copyOfRange(serviceData, 2, 18))
+                        val namespace = String(eddystoneUUID.toCharArray().sliceArray(0..19))
+                        val instance = String(
+                            eddystoneUUID.toCharArray()
+                                .sliceArray(20 until eddystoneUUID.toCharArray().size)
+                        )
+                        beacon.type = Beacon.beaconType.eddystoneUID
+                        beacon.namespace = namespace
+                        beacon.instance = instance
+
+                        Log.e("DINKAR", "Namespace:$namespace Instance:$instance")
+                    }
+                }
+                if (iBeaconManufactureData != null && iBeaconManufactureData.size >= 23) {
+                    val iBeaconUUID = Utils.toHexString(iBeaconManufactureData.copyOfRange(2, 18))
+                    val major = Integer.parseInt(
+                        Utils.toHexString(
+                            iBeaconManufactureData.copyOfRange(
+                                18,
+                                20
+                            )
+                        ), 16
+                    )
+                    val minor = Integer.parseInt(
+                        Utils.toHexString(
+                            iBeaconManufactureData.copyOfRange(
+                                20,
+                                22
+                            )
+                        ), 16
+                    )
+                    beacon.type = Beacon.beaconType.iBeacon
+                    beacon.uuid = iBeaconUUID
+                    beacon.major = major
+                    beacon.minor = minor
+                    Log.e("DINKAR", "iBeaconUUID:$iBeaconUUID major:$major minor:$minor")
+                }
+            }
+            if(beacon == null){
+                Log.e("Lee","beacon is null")
+            }else{
+                beaconSet.add(beacon)
+                (recyclerView.adapter as BeaconsAdapter).updateData(beaconSet.toList(),beaconTypePositionSelected)
             }
         }
+
+        override fun onScanFailed(errorCode: Int) {
+            Log.e("DINKAR", errorCode.toString())
+        }
+    }
     }
 
 
@@ -266,5 +282,116 @@ class ScannerFragment : Fragment() {
                 beaconAdapter!!.filter.filter(Utils.IBEACON)
             }
         }
+    }
+    private fun storeList(mac: String, rssi: Int){
+        val now = System.currentTimeMillis()
+        val d = Date(now)
+        val sd = SimpleDateFormat("hh:mm:ss")
+        val time: String = sd.format(d)
+
+        if(mac==mac1){
+            rssilist1.add(rssi)
+            timelist1.add(time)
+        }
+        if(mac==mac2){
+            rssilist2.add(rssi)
+            timelist2.add(time)
+        }
+        if(mac==mac3){
+            rssilist3.add(rssi)
+            timelist3.add(time)
+        }
+
+    }
+
+    private fun storeRssi(){
+        storeBeaconRssi(mac1, rssilist1, timelist1)
+        storeBeaconRssi(mac2, rssilist2, timelist2)
+        storeBeaconRssi(mac3, rssilist3, timelist3)
+
+    }
+
+
+    private fun storeBeaconRssi(mac:String, rssilist: ArrayList<Int>, timelist: ArrayList<String>) {
+        val result = rssilist
+        val timeL= timelist
+        Log.i("Lee", "Store is begin")
+        val now = System.currentTimeMillis()
+        val d = Date(now)
+        val sd = SimpleDateFormat("yyyy-MM-dd-hh:mm:ss")
+        val time: String = sd.format(d)
+        val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString()
+        //val path = Environment.getExternalStorageState()
+        //val filepath = File(path + "/Documents" + "/" + time + " " + name + ".txt")
+        //val writer = FileWriter(path + "/Documents" + "/" + time + " " + name + ".txt", true)
+        //val filepath = (context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).toString()
+
+
+        val writer = FileWriter("$path/$time $mac.csv", true)
+        var bw: BufferedWriter? = null // 출력 스트림 생성
+        bw = BufferedWriter(writer)
+        var temp: String
+        var j=1;
+        try{
+            for(i in result){
+                temp =i.toString()
+                bw.write(temp)
+                bw.write(",")
+
+                bw.write(timeL[j]);
+                bw.write(",")
+                bw.newLine() // 개행
+                //writer.write(i)
+                j++;
+            }
+        }
+        catch (e:Exception){
+        }finally {
+            bw.close()
+            writer.close()
+        }
+
+        /*if(isExternalStorageWritable()==true){
+            Log.i("Lee", "Store is begin")
+            val now = System.currentTimeMillis()
+            val d = Date(now)
+            val sd = SimpleDateFormat("hh:mm:ss")
+            val time: String = sd.format(d)
+            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString()
+            //val path = Environment.getExternalStorageState()
+            //val filepath = File(path + "/Documents" + "/" + time + " " + name + ".txt")
+            //val writer = FileWriter(path + "/Documents" + "/" + time + " " + name + ".txt", true)
+            //val filepath = (context?.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)).toString()
+
+
+            val writer = FileWriter("$path/$time $mac.csv", true)
+            var bw: BufferedWriter? = null // 출력 스트림 생성
+            bw = BufferedWriter(writer)
+            var temp: String
+            var j=1;
+            try{
+                for(i in result){
+                    temp =i.toString()
+                    bw.write(temp)
+                    bw.write(",")
+
+                    bw.write(timeL[j]);
+                    bw.write(",")
+                    bw.newLine() // 개행
+                    //writer.write(i)
+                    j++;
+                }
+            }
+            catch (e:Exception){
+            }finally {
+                bw.close()
+                writer.close()
+            }
+
+        }
+        Log.i("Lee", "Store is not start")*/
+    }
+    fun isExternalStorageWritable(): Boolean {
+        return Environment.getExternalStorageState() == Environment.DIRECTORY_DOCUMENTS
     }
 }
