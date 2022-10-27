@@ -61,7 +61,7 @@ public class Log_in_page extends AppCompatActivity {
         private void setRetrofitInit () {
             Gson gson = new GsonBuilder().setLenient().create();
             retrofit = new Retrofit.Builder()
-                    .baseUrl("http://13.125.248.219:8080/sign/")
+                    .baseUrl("http://203.255.81.72:10021/sign/")
                     .addConverterFactory(ScalarsConverterFactory.create())
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
@@ -82,7 +82,7 @@ public class Log_in_page extends AppCompatActivity {
                         intent.putExtra("id", id1);
                         startActivity(intent);
                     }else if(response.body().equals("2")){
-                        Intent intent = new Intent(Log_in_page.this, user_page.class);
+                        Intent intent = new Intent(Log_in_page.this, driver_page.class);
                         startActivity(intent);
                         intent.putExtra("id", id1);
                     }

@@ -50,6 +50,10 @@
             android:name=".user_page"
             android:exported="true"
             />
+        <activity
+            android:name=".driver_page"
+            android:exported="true"
+            />
 
     </application>
 

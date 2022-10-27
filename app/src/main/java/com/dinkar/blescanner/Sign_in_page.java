@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -28,6 +29,7 @@ public class Sign_in_page extends AppCompatActivity {
 
     private EditText editTextID ,editTextPW;    // 아이디, 비밀번호 입력창
     private Button btnLogin,btnLogin1;                    // 로그인 버튼
+    private RadioButton user_bt, driver_bt;
     private Retrofit retrofit;
     private Retrofit retrofit1;   // 웹서버와 통신할 Retrofit
 
@@ -48,12 +50,27 @@ public class Sign_in_page extends AppCompatActivity {
         radio_group = findViewById(R.id.radio_group);
         btnLogin1 = findViewById(R.id.logck1);
 
+        user_bt = findViewById(R.id.radioButton1);
+        driver_bt = findViewById(R.id.radioButton2);
 
+        user_bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(driver_bt.isChecked()){
+                    driver_bt.setChecked(false);
+                }
+                checked = "1";
+            }
+        });
 
-        radio_group.setOnCheckedChangeListener((radioGroup, i) -> {
-            checked = "1";
-            checked = i + "";
-            Log.e("TAG", "onCreate: " + checked);
+        driver_bt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(user_bt.isChecked()){
+                    user_bt.setChecked(false);
+                }
+                checked = "2";
+            }
         });
 
         btnLogin1.setOnClickListener(new View.OnClickListener() {
@@ -80,7 +97,7 @@ public class Sign_in_page extends AppCompatActivity {
         Gson gson = new GsonBuilder().setLenient().create();
 
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://13.125.248.219:8080/sign/")
+                .baseUrl("http://203.255.81.72:10021/sign/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
@@ -106,7 +123,7 @@ public class Sign_in_page extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "로그인에 실패하였습니다!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "회원가입에 실패하였습니다!", Toast.LENGTH_SHORT).show();
                 Log.e("TAG", "onFailure: " + t);
             }
         });
@@ -134,7 +151,7 @@ public class Sign_in_page extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "로그인에 실패하였습니다!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "회원가입에 실패하였습니다!", Toast.LENGTH_SHORT).show();
                 Log.e("TAG", "onFailure: " + t);
             }
         });

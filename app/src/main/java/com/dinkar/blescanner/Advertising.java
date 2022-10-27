@@ -59,10 +59,10 @@ public class Advertising {
             String tdata;
             // Advertising 데이터
             if(lock == false) {
-                tdata = "unlocksectionis" + sector;
+                tdata = "1locksectionis" + sector;
             }
             else{
-                tdata = "locksectionis"+sector;
+                tdata = "2locksectionis"+sector;
             }
             byte[] tdata1 = tdata.getBytes();
 

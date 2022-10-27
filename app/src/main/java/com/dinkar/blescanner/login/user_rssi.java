@@ -4,9 +4,9 @@ import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface test_rssi {
+public interface user_rssi {
 
-    @GET("send/")
+    @GET("receive/")
     Call<String> getMember(
             @Query("RSSI_1") String r1,
             @Query("RSSI_2") String r2,

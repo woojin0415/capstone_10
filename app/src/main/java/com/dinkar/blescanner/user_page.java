@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.dinkar.blescanner.login.test_rssi;
+import com.dinkar.blescanner.login.user_rssi;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -24,7 +24,7 @@ import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 public class user_page extends AppCompatActivity {
     private Retrofit retrofit;
-    int[] test_data;
+    int[][] test_data;
     boolean type_bt;
     boolean type_bt_adv;
     TextView tv;
@@ -38,7 +38,7 @@ public class user_page extends AppCompatActivity {
 
         String id =intent.getStringExtra("id");
 
-        test_data = new int[25];
+        test_data = new int[4][10];
         Button bt_receive = findViewById(R.id.bt_receive);
         tv = findViewById(R.id.tv_user);
 
@@ -60,18 +60,31 @@ public class user_page extends AppCompatActivity {
                     type_bt = true;
                 }
                 else if (type_bt == true && type_bt_adv == false){
-                    for(int i =0; i<5; i++) {
-                        System.out.println(id);
-                        String r1 = Integer.toString(test_data[0]);
-                        send(r1, r1, r1, r1, r1, id);
-                        type_bt = false;
-                        type_bt_adv = true;
-                        bt_receive.setText("수령하기");
-                    }
+
+                    System.out.println(id);
+                    String r1 = intarray_to_string(test_data[0]);
+                    String r2 = intarray_to_string(test_data[1]);
+                    String r3 = intarray_to_string(test_data[2]);
+                    String r4 = intarray_to_string(test_data[3]);
+
+                    send(r1,
+                            r2,
+                            r3,
+                            r4, r1, id);
+
+                    type_bt_adv = true;
+                    bt_receive.setText("수령하기");
+
+                }
+                else if (type_bt == true && type_bt_adv == true){
+                    type_bt = false;
+                    advertiser.startADV(sector, false); // lock: false - 잠금 해제
+                    bt_receive.setText("수령 완료");
                 }
                 else if (type_bt == false && type_bt_adv == true){
                     type_bt_adv = false;
-                    advertiser.startADV(sector, false); // lock: false - 잠금 해제
+                    advertiser.stopADV(); // lock: true - 잠금
+                    bt_receive.setText("시작하기");
                 }
             }
         });
@@ -82,22 +95,23 @@ public class user_page extends AppCompatActivity {
     private void setRetrofitInit () {
         Gson gson = new GsonBuilder().setLenient().create();
         retrofit = new Retrofit.Builder()
-                .baseUrl("http://13.125.248.219:8080/locker/")
+                .baseUrl("http://203.255.81.72:10021/locker/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
     }
     private void send (String r1, String r2, String r3, String r4, String r5, String user_id) {
 
-        test_rssi service = retrofit.create(test_rssi.class);
+        user_rssi service = retrofit.create(user_rssi.class);
         Call<String> call = service.getMember(r1, r2, r3, r4, r5, user_id);
+        System.out.println(r1 +  r2 + r3 + r4 +  r5);
         call.enqueue(new Callback<String>() {
             @Override
             public void onResponse(Call<String> call, Response<String> response) {
                 Log.e("TAG", "onResponse11: " + response.body());
                 String locker_number = response.body();
                 sector = locker_number;
-                tv.setText(locker_number);
+                tv.setText("User" + locker_number);
             }
             @Override
             public void onFailure(Call<String> call, Throwable t) {
@@ -106,5 +120,14 @@ public class user_page extends AppCompatActivity {
             }
         });
 
+    }
+    private String intarray_to_string(int arr[]){
+        String result ="";
+
+        for (int i =0; i<10; i++){
+            result+= (char)arr[i];
+        }
+        System.out.println(result);
+        return result;
     }
 }
